@@ -50,6 +50,37 @@ async function run() {
 
       res.json(result); // send the respone to client side
     });
+
+    //(UPDATE) --> UPDATE THE USER ROLE
+    app.put('/user/admin', async (req, res) => {
+      const user = req.body; // will come from frontend ({requester: email, newAdminEmail: email})
+
+      if (user?.requester) {
+        const requesterAccount = await User.findOne({
+          email: user.requester,
+        }); // find the requester info in database
+
+        // check if the requester is admin or not
+        if (requesterAccount?.role === 'admin') {
+          const filter = { email: user.newAdminEmail };
+
+          const updateDoc = { $set: { role: 'admin' } };
+
+          const result = await User.updateOne(filter, updateDoc);
+
+          res.json(result); // send the result after updating an user role
+        } else {
+          res
+            .status(403)
+            .json({ message: 'you do not have access to make admin' });
+        }
+      } else {
+        res.status(404).json({
+          message:
+            'Please make sure the user that you want to make admin is available in database.',
+        });
+      }
+    });
   } catch (e) {
     console.log(e.message);
   }

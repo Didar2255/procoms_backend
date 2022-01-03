@@ -3,6 +3,7 @@ const cors = require('cors');
 const express = require('express');
 const mongoose = require('mongoose');
 const User = require('./models/User/User');
+const Product = require('./models/Product/Product');
 
 //intialize express app
 const app = express();
@@ -36,6 +37,16 @@ const errorhandler = (error, request, response, next) => {
 
 async function run() {
   try {
+    // (READ) --> GET ALL THE PRODUCTS FROM DATABASE
+    app.get('/products', async (req, res, next) => {
+      try {
+        const products = await Product.find();
+        res.json(products); // send all the products to user
+      } catch (error) {
+        next(error);
+      }
+    });
+
     // (READ) --> FIND A USER IS ADMIN OR NOT
     app.get('/user', async (req, res, next) => {
       try {
@@ -43,6 +54,17 @@ async function run() {
         const user = await User.findOne({ email });
         const isAdmin = user?.role === 'admin';
         res.json({ admin: isAdmin }); // send the admin status of user to client side
+      } catch (error) {
+        next(error);
+      }
+    });
+
+    // (CREATE) --> CREATE A PRODUCT IN DATABASE
+    app.post('/products', async (req, res, next) => {
+      try {
+        const product = req.body;
+        const createdProduct = await Product.create(product);
+        res.json(createdProduct);
       } catch (error) {
         next(error);
       }

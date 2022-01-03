@@ -36,6 +36,20 @@ const errorhandler = (error, request, response, next) => {
 
 async function run() {
   try {
+    //(UPDATE) --> UPDATE AN USER
+    app.put('/user', async (req, res) => {
+      const user = req.body;
+
+      const filter = { email: user.email };
+
+      const options = { upsert: true };
+
+      const updateDoc = { $set: user };
+
+      const result = await User.updateOne(filter, updateDoc, options);
+
+      res.json(result); // send the respone to client side
+    });
   } catch (e) {
     console.log(e.message);
   }

@@ -36,6 +36,18 @@ const errorhandler = (error, request, response, next) => {
 
 async function run() {
   try {
+    // (READ) --> FIND A USER IS ADMIN OR NOT
+    app.get('/user', async (req, res, next) => {
+      try {
+        const email = req.query.email;
+        const user = await User.findOne({ email });
+        const isAdmin = user?.role === 'admin';
+        res.json({ admin: isAdmin }); // send the admin status of user to client side
+      } catch (error) {
+        next(error);
+      }
+    });
+
     //(UPDATE) --> UPDATE AN USER
     app.put('/user', async (req, res) => {
       const user = req.body;

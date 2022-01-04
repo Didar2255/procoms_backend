@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const User = require('./models/User/User');
 const Product = require('./models/Product/Product');
 const Order = require('./models/Order/Order');
+const Review = require('./models/Review/Review');
 const ObjectId = require('mongodb').ObjectId;
 
 //intialize express app
@@ -94,6 +95,17 @@ async function run() {
       }
     });
 
+    // (READ) --> GET ALL THE REVIEW
+    app.get('/reviews', async (req, res, next) => {
+      try {
+        //find in reviews collection
+        const reviews = await Review.find();
+        res.json(reviews); // send the reviews to client side.
+      } catch (error) {
+        next(error);
+      }
+    });
+
     // (CREATE) --> CREATE A PRODUCT IN DATABASE
     app.post('/products', async (req, res, next) => {
       try {
@@ -121,6 +133,7 @@ async function run() {
     app.post('/orders', async (req, res, next) => {
       try {
         const newOrder = req.body; // order info
+        console.log(newOrder);
 
         // insert the order info in order collection
         const result = await Order.insertMany({
@@ -129,6 +142,19 @@ async function run() {
         });
 
         res.json(result); // response after adding order info in the database
+      } catch (error) {
+        next(error);
+      }
+    });
+
+    //  (CREATE) --> CREATE AN USER REVIEW IN DATABASE
+    app.post('/reviews', async (req, res, next) => {
+      try {
+        const userReviews = req.body; // user review info
+
+        const result = await Review.insertMany(userReviews);
+
+        res.json(result); // response after adding bike user review in the database
       } catch (error) {
         next(error);
       }

@@ -4,6 +4,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const User = require('./models/User/User');
 const Product = require('./models/Product/Product');
+const Order = require('./models/Order/Order');
 const ObjectId = require('mongodb').ObjectId;
 
 //intialize express app
@@ -93,6 +94,23 @@ async function run() {
         const result = await Product.insertMany(newProduct);
 
         res.json(result); // response after adding product in the database
+      } catch (error) {
+        next(error);
+      }
+    });
+
+    // (CREATE) --> CREATE AN ORDER IN DATABASE
+    app.post('/orders', async (req, res, next) => {
+      try {
+        const newOrder = req.body; // order info
+
+        // insert the order info in order collection
+        const result = await Order.insertMany({
+          ...newOrder,
+          status: 'pending',
+        });
+
+        res.json(result); // response after adding order info in the database
       } catch (error) {
         next(error);
       }

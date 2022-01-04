@@ -87,7 +87,7 @@ async function run() {
     });
 
     //  (CREATE) --> CREATE A PRODUCT IN DATABASE
-    app.post('/product', async (req, res, next) => {
+    app.post('/products', async (req, res, next) => {
       try {
         const newProduct = req.body; // product info
         const result = await Product.insertMany(newProduct);
@@ -141,6 +141,21 @@ async function run() {
           message:
             'Please make sure the user that you want to make admin is available in database.',
         });
+      }
+    });
+
+    // (DELETE) --> DELETE A BIKE FROM THE DATABASE
+    app.delete('/products/:id', async (req, res) => {
+      try {
+        const id = req.params.id;
+
+        const query = { _id: ObjectId(id) };
+
+        const result = await Product.deleteOne(query); // delete the matched product from database
+
+        res.json(result); // send the response to client side
+      } catch (error) {
+        next(error);
       }
     });
   } catch (e) {

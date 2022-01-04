@@ -55,11 +55,11 @@ async function run() {
       try {
         const id = req.params.id;
 
-        const query = { _id: ObjectId(id) }; // query for single bike
+        const query = { _id: ObjectId(id) }; // query for single Product
 
-        const singleProduct = await Product.findOne(query); // find the single bike
+        const singleProduct = await Product.findOne(query); // find the single Product
 
-        res.json(singleProduct); // send the bike to client side.
+        res.json(singleProduct); // send the Product to client side.
       } catch (error) {
         next(error);
       }
@@ -154,7 +154,7 @@ async function run() {
 
         const result = await Review.insertMany(userReviews);
 
-        res.json(result); // response after adding bike user review in the database
+        res.json(result); // response after adding Product user review in the database
       } catch (error) {
         next(error);
       }
@@ -238,7 +238,7 @@ async function run() {
       }
     });
 
-    // (DELETE) --> DELETE A BIKE FROM THE DATABASE
+    // (DELETE) --> DELETE A Product FROM THE DATABASE
     app.delete('/products/:id', async (req, res) => {
       try {
         const id = req.params.id;
@@ -275,19 +275,6 @@ async function run() {
       }
     });
 
-    // update the user payment info
-    app.put('/makepayment', async (req, res, next) => {
-      try {
-        const email = req.query.email;
-        const updatedUser = await User.updateOne(
-          { email },
-          { isPaidUser: true }
-        );
-        res.json(updatedUser);
-      } catch (error) {
-        next(error);
-      }
-    });
   } catch (e) {
     console.log(e.message);
   }

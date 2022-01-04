@@ -8,17 +8,17 @@ const Order = require('./models/Order/Order');
 const Review = require('./models/Review/Review');
 const ObjectId = require('mongodb').ObjectId;
 
-//intialize express app
+//initialize express app
 const app = express();
 
 //PORT
 const PORT = process.env.PORT || 5000;
 
-//middlewares
+//middle wares
 app.use(express.json());
 app.use(cors());
 
-//connetion URI of mongodb
+//connection URI of mongodb
 const uri = process.env.MONGODB_URI;
 
 // connect to mongodb database

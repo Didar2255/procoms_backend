@@ -7,6 +7,7 @@ const Product = require('./models/Product/Product');
 const Order = require('./models/Order/Order');
 const Review = require('./models/Review/Review');
 const ObjectId = require('mongodb').ObjectId;
+const stripe = require('stripe')(process.env.STRIPE_SECRET)
 
 //initialize express app
 const app = express();

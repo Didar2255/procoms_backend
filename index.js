@@ -7,6 +7,7 @@ const Product = require('./models/Product/Product');
 const Order = require('./models/Order/Order');
 const Review = require('./models/Review/Review');
 const ObjectId = require('mongodb').ObjectId;
+const stripe = require('stripe')(process.env.STRIPE_SECRET);
 
 //initialize express app
 const app = express();
@@ -160,6 +161,28 @@ async function run() {
       }
     });
 
+    // (CREATE) --> PAYMENT GATEWAY
+    app.post('/create-payment-intent', async (req, res, next) => {
+      try {
+        const { price } = req.body;
+
+        // Create a PaymentIntent with the order amount and currency
+        const paymentIntent = await stripe.paymentIntents.create({
+          amount: price * 100,
+          currency: 'usd',
+          automatic_payment_methods: {
+            enabled: true,
+          },
+        });
+
+        res.json({
+          clientSecret: paymentIntent.client_secret,
+        });
+      } catch (error) {
+        next(error);
+      }
+    });
+
     //(UPDATE) --> UPDATE THE ORDER STATUS
     app.put('/orders/:id', async (req, res, next) => {
       try {
@@ -252,29 +275,6 @@ async function run() {
         next(error);
       }
     });
-
-    // implement payment
-    app.post('/create-payment-intent', async (req, res, next) => {
-      try {
-        const { price } = req.body;
-
-        // Create a PaymentIntent with the order amount and currency
-        const paymentIntent = await stripe.paymentIntents.create({
-          amount: price * 100,
-          currency: 'usd',
-          automatic_payment_methods: {
-            enabled: true,
-          },
-        });
-
-        res.json({
-          clientSecret: paymentIntent.client_secret,
-        });
-      } catch (error) {
-        next(error);
-      }
-    });
-
   } catch (e) {
     console.log(e.message);
   }

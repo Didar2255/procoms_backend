@@ -158,6 +158,74 @@ async function run() {
         next(error);
       }
     });
+
+    // Create A card In database
+
+    app.post('/card', async (req, res, next) => {
+      try {
+        const card = await Card.create(req.body);
+        res.json(card);
+      } catch (error) {
+        next(error);
+      }
+    });
+
+    // get All card from database
+    app.get('/', async (req, res, next) => {
+      try {
+        const allcards = await Card.find();
+        res.json(allcards);
+      } catch (error) {
+        next(error);
+      }
+    });
+
+    // get a single card using id 
+    app.get('/card/:id', async (req, res, next) => {
+      try {
+        const { id } = req.params;
+        const card = await Card.findById(id);
+        res.json(card);
+      } catch (error) {
+        next(error);
+      }
+    });
+    // implement payment
+    app.post('/create-payment-intent', async (req, res, next) => {
+      try {
+        const { price } = req.body;
+
+        // Create a PaymentIntent with the order amount and currency
+        const paymentIntent = await stripe.paymentIntents.create({
+          amount: price * 100,
+          currency: 'usd',
+          automatic_payment_methods: {
+            enabled: true,
+          },
+        });
+
+        res.json({
+          clientSecret: paymentIntent.client_secret,
+        });
+      } catch (error) {
+        next(error);
+      }
+    });
+
+    // update the user payment info
+    app.put('/makepayment', async (req, res, next) => {
+      try {
+        const email = req.query.email;
+        const updatedUser = await User.updateOne(
+          { email },
+          { isPaidUser: true }
+        );
+        res.json(updatedUser);
+      } catch (error) {
+        next(error);
+      }
+    });
+
   } catch (e) {
     console.log(e.message);
   }

@@ -4,17 +4,17 @@ const express = require('express');
 const mongoose = require('mongoose');
 const User = require('./models/User/User');
 
-//intialize express app
+//initialize express app
 const app = express();
 
 //PORT
 const PORT = process.env.PORT || 5000;
 
-//middlewares
+//middle wares
 app.use(express.json());
 app.use(cors());
 
-//connetion URI of mongodb
+//connection URI of mongodb
 const uri = process.env.MONGODB_URI;
 
 // connect to mongodb database
@@ -93,6 +93,9 @@ async function run() {
         });
       }
     });
+
+
+
   } catch (e) {
     console.log(e.message);
   }

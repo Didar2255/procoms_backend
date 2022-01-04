@@ -159,37 +159,6 @@ async function run() {
       }
     });
 
-    // Create A card In database
-
-    app.post('/card', async (req, res, next) => {
-      try {
-        const card = await Card.create(req.body);
-        res.json(card);
-      } catch (error) {
-        next(error);
-      }
-    });
-
-    // get All card from database
-    app.get('/', async (req, res, next) => {
-      try {
-        const allcards = await Card.find();
-        res.json(allcards);
-      } catch (error) {
-        next(error);
-      }
-    });
-
-    // get a single card using id 
-    app.get('/card/:id', async (req, res, next) => {
-      try {
-        const { id } = req.params;
-        const card = await Card.findById(id);
-        res.json(card);
-      } catch (error) {
-        next(error);
-      }
-    });
     // implement payment
     app.post('/create-payment-intent', async (req, res, next) => {
       try {

@@ -3,6 +3,8 @@ const cors = require('cors');
 const express = require('express');
 const mongoose = require('mongoose');
 const User = require('./models/User/User');
+const Product = require('./models/Product/Product');
+const ObjectId = require('mongodb').ObjectId;
 
 //initialize express app
 const app = express();
@@ -36,6 +38,31 @@ const errorhandler = (error, request, response, next) => {
 
 async function run() {
   try {
+    // (READ) --> GET ALL PRODUCTS FROM DATABASE
+    app.get('/products', async (req, res, next) => {
+      try {
+        const products = await Product.find();
+        res.json(products); // send all the products to user
+      } catch (error) {
+        next(error);
+      }
+    });
+
+    // (READ) --> GET A SINGLE PRODUCT FROM THE DATABASE
+    app.get('/products/:id', async (req, res, next) => {
+      try {
+        const id = req.params.id;
+
+        const query = { _id: ObjectId(id) }; // query for single bike
+
+        const singleProduct = await Product.findOne(query); // find the single bike
+
+        res.json(singleProduct); // send the bike to client side.
+      } catch (error) {
+        next(error);
+      }
+    });
+
     // (READ) --> FIND A USER IS ADMIN OR NOT
     app.get('/user', async (req, res, next) => {
       try {
@@ -43,6 +70,29 @@ async function run() {
         const user = await User.findOne({ email });
         const isAdmin = user?.role === 'admin';
         res.json({ admin: isAdmin }); // send the admin status of user to client side
+      } catch (error) {
+        next(error);
+      }
+    });
+
+    // (CREATE) --> CREATE A PRODUCT IN DATABASE
+    app.post('/products', async (req, res, next) => {
+      try {
+        const product = req.body;
+        const createdProduct = await Product.create(product);
+        res.json(createdProduct);
+      } catch (error) {
+        next(error);
+      }
+    });
+
+    //  (CREATE) --> CREATE A PRODUCT IN DATABASE
+    app.post('/products', async (req, res, next) => {
+      try {
+        const newProduct = req.body; // product info
+        const result = await Product.insertMany(newProduct);
+
+        res.json(result); // response after adding product in the database
       } catch (error) {
         next(error);
       }
@@ -94,8 +144,20 @@ async function run() {
       }
     });
 
+    // (DELETE) --> DELETE A BIKE FROM THE DATABASE
+    app.delete('/products/:id', async (req, res) => {
+      try {
+        const id = req.params.id;
 
+        const query = { _id: ObjectId(id) };
 
+        const result = await Product.deleteOne(query); // delete the matched product from database
+
+        res.json(result); // send the response to client side
+      } catch (error) {
+        next(error);
+      }
+    });
   } catch (e) {
     console.log(e.message);
   }

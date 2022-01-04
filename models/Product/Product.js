@@ -6,7 +6,11 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    desc: {
+    short_desc: {
+      type: String,
+      required: true,
+    },
+    long_desc: {
       type: String,
       required: true,
     },
@@ -22,12 +26,12 @@ const productSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    category: {
+      type: String,
+      required: true,
+    },
   },
   { versionKey: false }
 );
 
-module.exports = {
-  Laptop: mongoose.model('Laptop', productSchema),
-  Camera: mongoose.model('Camera', productSchema),
-  Drone: mongoose.model('Drone', productSchema),
-};
+module.exports = mongoose.model('Products', productSchema);

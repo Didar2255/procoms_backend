@@ -4,6 +4,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const User = require('./models/User/User');
 const Product = require('./models/Product/Product');
+const ObjectId = require('mongodb').ObjectId;
 
 //intialize express app
 const app = express();
@@ -37,11 +38,26 @@ const errorhandler = (error, request, response, next) => {
 
 async function run() {
   try {
-    // (READ) --> GET ALL THE PRODUCTS FROM DATABASE
+    // (READ) --> GET ALL PRODUCTS FROM DATABASE
     app.get('/products', async (req, res, next) => {
       try {
         const products = await Product.find();
         res.json(products); // send all the products to user
+      } catch (error) {
+        next(error);
+      }
+    });
+
+    // (READ) --> GET A SINGLE PRODUCT FROM THE DATABASE
+    app.get('/products/:id', async (req, res, next) => {
+      try {
+        const id = req.params.id;
+
+        const query = { _id: ObjectId(id) }; // query for single bike
+
+        const singleProduct = await Product.findOne(query); // find the single bike
+
+        res.json(singleProduct); // send the bike to client side.
       } catch (error) {
         next(error);
       }
@@ -65,6 +81,18 @@ async function run() {
         const product = req.body;
         const createdProduct = await Product.create(product);
         res.json(createdProduct);
+      } catch (error) {
+        next(error);
+      }
+    });
+
+    //  (CREATE) --> CREATE A PRODUCT IN DATABASE
+    app.post('/product', async (req, res, next) => {
+      try {
+        const newProduct = req.body; // product info
+        const result = await Product.insertMany(newProduct);
+
+        res.json(result); // response after adding product in the database
       } catch (error) {
         next(error);
       }

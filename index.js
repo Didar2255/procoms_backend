@@ -6,6 +6,7 @@ const User = require('./models/User/User');
 const Product = require('./models/Product/Product');
 const Order = require('./models/Order/Order');
 const ObjectId = require('mongodb').ObjectId;
+const stripe = require('stripe')(process.env.STRIPE_SECRET);
 
 //intialize express app
 const app = express();
@@ -54,11 +55,11 @@ async function run() {
       try {
         const id = req.params.id;
 
-        const query = { _id: ObjectId(id) }; // query for single bike
+        const query = { _id: ObjectId(id) }; // query for single product
 
-        const singleProduct = await Product.findOne(query); // find the single bike
+        const singleProduct = await Product.findOne(query); // find the single product
 
-        res.json(singleProduct); // send the bike to client side.
+        res.json(singleProduct); // send the product to client side.
       } catch (error) {
         next(error);
       }
@@ -129,6 +130,29 @@ async function run() {
         });
 
         res.json(result); // response after adding order info in the database
+      } catch (error) {
+        next(error);
+      }
+    });
+
+    // (CREATE) --> PAYMENT GATEWAY
+    app.post('/create-payment-intent', async (req, res, next) => {
+      try {
+        const { price } = req.body;
+        console.log(price);
+
+        // Create a PaymentIntent with the order amount and currency
+        const paymentIntent = await stripe.paymentIntents.create({
+          amount: price * 100,
+          currency: 'usd',
+          automatic_payment_methods: {
+            enabled: true,
+          },
+        });
+
+        res.json({
+          clientSecret: paymentIntent.client_secret,
+        });
       } catch (error) {
         next(error);
       }
@@ -212,8 +236,8 @@ async function run() {
       }
     });
 
-    // (DELETE) --> DELETE A product FROM THE DATABASE
-    app.delete('/products/:id', async (req, res) => {
+    // (DELETE) --> DELETE A PRODUCT FROM THE DATABASE
+    app.delete('/products/:id', async (req, res, next) => {
       try {
         const id = req.params.id;
 
@@ -228,7 +252,7 @@ async function run() {
     });
 
     // (DELETE) --> DELETE AN ORDER FROM THE DATABASE
-    app.delete('/orders/:id', async (req, res) => {
+    app.delete('/orders/:id', async (req, res, next) => {
       try {
         const id = req.params.id;
 
@@ -243,13 +267,25 @@ async function run() {
     });
 
     // (DELETE) --> DELETE ALL ORDERS WITH SPECIFIC ID
-    app.delete('/orders/deleteall/:id', async (req, res) => {
+    app.delete('/orders/deleteall/:id', async (req, res, next) => {
       try {
         const id = req.params.id;
 
         const query = { product_id: id };
 
         const result = await Order.deleteMany(query); // delete all the matched order from database
+
+        res.json(result); // send the response to user
+      } catch (error) {
+        next(error);
+      }
+    });
+
+    // (DELETE) --> DELETE ALL ORDERS OF SPECIFICE USER
+    app.delete('/orders', async (req, res, next) => {
+      try {
+        const email = req.query.email;
+        const result = await Order.deleteMany({ email }); // delete all the matched order from database
 
         res.json(result); // send the response to user
       } catch (error) {

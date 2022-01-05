@@ -95,6 +95,17 @@ async function run() {
       }
     });
 
+    // (READ) --> GET ALL THE REVIEW
+    app.get('/reviews', async (req, res, next) => {
+      try {
+        //find in reviews collection
+        const reviews = await Review.find();
+        res.json(reviews); // send the reviews to client side.
+      } catch (error) {
+        next(error);
+      }
+    });
+
     // (CREATE) --> CREATE A PRODUCT IN DATABASE
     app.post('/products', async (req, res, next) => {
       try {
@@ -130,6 +141,19 @@ async function run() {
         });
 
         res.json(result); // response after adding order info in the database
+      } catch (error) {
+        next(error);
+      }
+    });
+
+    //  (CREATE) --> CREATE AN USER REVIEW IN DATABASE
+    app.post('/reviews', async (req, res, next) => {
+      try {
+        const userReviews = req.body; // user review info
+
+        const result = await Review.insertMany(userReviews);
+
+        res.json(result); // response after adding bike user review in the database
       } catch (error) {
         next(error);
       }
@@ -300,8 +324,8 @@ run().catch(console.dir);
 app.use(errorhandler);
 
 app.get('/', (req, res) => {
-  res.send('welcome procoms')
-})
+  res.send('welcome procoms');
+});
 app.listen(PORT, () => {
   console.log(`server running on port ${PORT}`);
 });

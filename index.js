@@ -5,21 +5,20 @@ const mongoose = require('mongoose');
 const User = require('./models/User/User');
 const Product = require('./models/Product/Product');
 const Order = require('./models/Order/Order');
-const Review = require('./models/Review/Review');
 const ObjectId = require('mongodb').ObjectId;
-const stripe = require('stripe')(process.env.STRIPE_SECRET)
+const stripe = require('stripe')(process.env.STRIPE_SECRET);
 
-//initialize express app
+//intialize express app
 const app = express();
 
 //PORT
 const PORT = process.env.PORT || 5000;
 
-//middle wares
+//middlewares
 app.use(express.json());
 app.use(cors());
 
-//connection URI of mongodb
+//connetion URI of mongodb
 const uri = process.env.MONGODB_URI;
 
 // connect to mongodb database
@@ -56,11 +55,11 @@ async function run() {
       try {
         const id = req.params.id;
 
-        const query = { _id: ObjectId(id) }; // query for single Product
+        const query = { _id: ObjectId(id) }; // query for single product
 
-        const singleProduct = await Product.findOne(query); // find the single Product
+        const singleProduct = await Product.findOne(query); // find the single product
 
-        res.json(singleProduct); // send the Product to client side.
+        res.json(singleProduct); // send the product to client side.
       } catch (error) {
         next(error);
       }
@@ -96,17 +95,6 @@ async function run() {
       }
     });
 
-    // (READ) --> GET ALL THE REVIEW
-    app.get('/reviews', async (req, res, next) => {
-      try {
-        //find in reviews collection
-        const reviews = await Review.find();
-        res.json(reviews); // send the reviews to client side.
-      } catch (error) {
-        next(error);
-      }
-    });
-
     // (CREATE) --> CREATE A PRODUCT IN DATABASE
     app.post('/products', async (req, res, next) => {
       try {
@@ -134,7 +122,6 @@ async function run() {
     app.post('/orders', async (req, res, next) => {
       try {
         const newOrder = req.body; // order info
-        console.log(newOrder);
 
         // insert the order info in order collection
         const result = await Order.insertMany({
@@ -148,14 +135,23 @@ async function run() {
       }
     });
 
-    //  (CREATE) --> CREATE AN USER REVIEW IN DATABASE
-    app.post('/reviews', async (req, res, next) => {
+    // (CREATE) --> PAYMENT GATEWAY
+    app.post('/create-payment-intent', async (req, res, next) => {
       try {
-        const userReviews = req.body; // user review info
+        const { price } = req.body;
 
-        const result = await Review.insertMany(userReviews);
+        // Create a PaymentIntent with the order amount and currency
+        const paymentIntent = await stripe.paymentIntents.create({
+          amount: price * 100,
+          currency: 'usd',
+          automatic_payment_methods: {
+            enabled: true,
+          },
+        });
 
-        res.json(result); // response after adding Product user review in the database
+        res.json({
+          clientSecret: paymentIntent.client_secret,
+        });
       } catch (error) {
         next(error);
       }
@@ -239,8 +235,8 @@ async function run() {
       }
     });
 
-    // (DELETE) --> DELETE A Product FROM THE DATABASE
-    app.delete('/products/:id', async (req, res) => {
+    // (DELETE) --> DELETE A PRODUCT FROM THE DATABASE
+    app.delete('/products/:id', async (req, res, next) => {
       try {
         const id = req.params.id;
 
@@ -254,28 +250,47 @@ async function run() {
       }
     });
 
-    // implement payment
-    app.post('/create-payment-intent', async (req, res, next) => {
+    // (DELETE) --> DELETE AN ORDER FROM THE DATABASE
+    app.delete('/orders/:id', async (req, res, next) => {
       try {
-        const { price } = req.body;
+        const id = req.params.id;
 
-        // Create a PaymentIntent with the order amount and currency
-        const paymentIntent = await stripe.paymentIntents.create({
-          amount: price * 100,
-          currency: 'usd',
-          automatic_payment_methods: {
-            enabled: true,
-          },
-        });
+        const query = { _id: ObjectId(id) };
 
-        res.json({
-          clientSecret: paymentIntent.client_secret,
-        });
+        const result = await Order.deleteOne(query); // delete the matched order from database
+
+        res.json(result); // send the response to user
       } catch (error) {
         next(error);
       }
     });
 
+    // (DELETE) --> DELETE ALL ORDERS WITH SPECIFIC ID
+    app.delete('/orders/deleteall/:id', async (req, res, next) => {
+      try {
+        const id = req.params.id;
+
+        const query = { product_id: id };
+
+        const result = await Order.deleteMany(query); // delete all the matched order from database
+
+        res.json(result); // send the response to user
+      } catch (error) {
+        next(error);
+      }
+    });
+
+    // (DELETE) --> DELETE ALL ORDERS OF SPECIFICE USER
+    app.delete('/orders', async (req, res, next) => {
+      try {
+        const email = req.query.email;
+        const result = await Order.deleteMany({ email }); // delete all the matched order from database
+
+        res.json(result); // send the response to user
+      } catch (error) {
+        next(error);
+      }
+    });
   } catch (e) {
     console.log(e.message);
   }

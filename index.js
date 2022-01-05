@@ -299,6 +299,9 @@ run().catch(console.dir);
 
 app.use(errorhandler);
 
+app.get('/', (req, res) => {
+  res.send('welcome procoms')
+})
 app.listen(PORT, () => {
   console.log(`server running on port ${PORT}`);
 });
